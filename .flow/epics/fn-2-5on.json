@@ -1,0 +1,13 @@
+{
+  "branch_name": "fn-2-5on",
+  "created_at": "2026-02-08T22:39:46.951216Z",
+  "depends_on_epics": [],
+  "id": "fn-2-5on",
+  "next_task": 1,
+  "plan_review_status": "unknown",
+  "plan_reviewed_at": null,
+  "spec_path": ".flow/specs/fn-2-5on.md",
+  "status": "open",
+  "title": "Frontend: Chat UI & User Experience",
+  "updated_at": "2026-02-08T22:39:46.951369Z"
+}

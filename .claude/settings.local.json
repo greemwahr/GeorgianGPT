@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Skill(flow-next:plan-review)",
+      "Skill(flow-next:flow-next:plan-review)",
+      "Skill(superpowers:brainstorming)",
+      "Bash(FLOWCTL=\"/Users/shadowsyntax/.claude/plugins/cache/gmickel-claude-marketplace/flow-next/0.13.0/scripts/flowctl\")",
+      "Bash($FLOWCTL epic create --title \"Frontend: Chat UI & User Experience\" --json)",
+      "Bash($FLOWCTL task create --epic fn-1-j9y --title \"Setup Python environment and Scrapy crawler\" --json)",
+      "Bash($FLOWCTL task create --epic fn-1-j9y --title \"Implement content processing and ingestion pipeline\" --json)",
+      "Bash($FLOWCTL task create --epic fn-1-j9y --title \"Setup Supabase schema and vector search function\" --json)",
+      "Bash($FLOWCTL task create --epic fn-1-j9y --title \"Implement LLM provider abstraction layer\" --json)",
+      "Bash($FLOWCTL task create --epic fn-1-j9y --title \"Build RAG API route with streaming and error handling\" --json)",
+      "Bash($FLOWCTL task create --epic fn-2-5on --title \"Initialize Next.js project with dependencies\" --json)",
+      "Bash($FLOWCTL task create --epic fn-2-5on --title \"Build chat components \\(ChatInterface, MessageList, MessageInput\\)\" --json)",
+      "Bash($FLOWCTL task create:*)",
+      "Bash($FLOWCTL list)",
+      "Bash($FLOWCTL codex plan-review fn-1-j9y --receipt /tmp/backend-review-receipt.json)",
+      "Bash($FLOWCTL task set-depends fn-1-j9y.5 --add-depends fn-2-5on.1 --json)"
+    ]
+  }
+}

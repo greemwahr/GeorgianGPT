@@ -1,0 +1,13 @@
+{
+  "branch_name": "fn-1-j9y",
+  "created_at": "2026-02-08T22:39:28.375108Z",
+  "depends_on_epics": [],
+  "id": "fn-1-j9y",
+  "next_task": 1,
+  "plan_review_status": "unknown",
+  "plan_reviewed_at": null,
+  "spec_path": ".flow/specs/fn-1-j9y.md",
+  "status": "open",
+  "title": "Backend: Data Pipeline & RAG Infrastructure",
+  "updated_at": "2026-02-08T22:39:28.375272Z"
+}
