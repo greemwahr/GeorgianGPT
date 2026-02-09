@@ -17,7 +17,8 @@
       "Bash($FLOWCTL task create:*)",
       "Bash($FLOWCTL list)",
       "Bash($FLOWCTL codex plan-review fn-1-j9y --receipt /tmp/backend-review-receipt.json)",
-      "Bash($FLOWCTL task set-depends fn-1-j9y.5 --add-depends fn-2-5on.1 --json)"
+      "Bash($FLOWCTL task set-depends fn-1-j9y.5 --add-depends fn-2-5on.1 --json)",
+      "Bash(gh repo create:*)"
     ]
   }
 }

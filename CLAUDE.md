@@ -6,11 +6,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GeorgianGPT is a RAG (Retrieval-Augmented Generation) powered chatbot for Georgian College. It uses the college's website content to answer student questions through a ChatGPT-like interface.
 
+**Repository**: https://github.com/greemwahr/GeorgianGPT
+
 **Target Website**: Georgian College (https://www.georgiancollege.ca)
 - Crawl scope: `*.georgiancollege.ca` with depth limit 8
 - Priority sections: Programs, Admissions, Student Services, Academic Calendar
 
 **Architecture**: Next.js frontend → RAG pipeline → Supabase pgvector (retrieval) → Mistral-7B on HuggingFace → Streaming responses
+
+**Project Status**: Planning phase complete
+- 2 epics created: Backend (fn-1-j9y) and Frontend (fn-2-5on)
+- 8 tasks defined and reviewed by Codex CLI
+- All critical architectural issues resolved
+- Ready for implementation
 
 ## Development Commands
 
@@ -100,16 +108,19 @@ supabase==2.3.0
 **API Routes** (`app/api/chat/route.ts`):
 - Receives messages array from frontend (includes conversation history)
 - Orchestrates RAG pipeline (context-aware embed → retrieve → prompt → generate)
-- Streams LLM responses using Edge runtime
-- **Error handling**: 60s timeout, 3 retries with exponential backoff, fallback messages
+- **IMPORTANT**: Uses Node.js runtime (NOT Edge) to support 60s timeout for LLM inference
+- Streams LLM responses with retry logic applied to pre-stream steps only (embedding + retrieval)
+- **Error handling**: 60s timeout, 3 retries with exponential backoff (1s, 2s, 4s), fallback messages
 - **Logging**: Structured metrics including retrieval quality, response times, citations
 
 **Data Pipeline** (`scripts/`):
 - Scrapy spider: Crawls `georgiancollege.ca` (1 req/sec, depth 8, respects robots.txt)
-- Content processing: Extracts from HTML/PDFs, chunks **fixed 700 tokens** with 100-token overlap
-- **Deduplication**: SHA-256 hash of normalized content, skip duplicate chunks
+- Content processing: Extracts from HTML/PDFs
+- **Chunking**: Sentence splitting with NLTK punkt tokenizer, then pack into ~700 tiktoken tokens (cl100k_base encoding) with 100-token overlap
+- **IMPORTANT**: Use tiktoken for token counting (NOT NLTK tokens) to match model's tokenization
+- **Deduplication**: SHA-256 hash of normalized content (collapse whitespace, preserve case), skip duplicate chunks
 - Ingest script: Generates embeddings and bulk inserts to Supabase
-- **Index creation**: Create IVFFlat index AFTER data load with `lists = rows / 1000`
+- **Index creation**: Create IVFFlat index AFTER data load - compute `lists = max(10, row_count // 1000)` first, then run `CREATE INDEX ... WITH (lists = <computed_literal>)`
 
 ### Supabase Schema
 
@@ -122,9 +133,11 @@ The `documents` table stores chunked content with embeddings:
 - `created_at`: Timestamp
 
 **Index Strategy**:
-- IVFFlat index created AFTER initial data load
-- Formula: `lists = GREATEST(10, row_count / 1000)`
-- Index on `content_hash` for fast deduplication checks
+- IVFFlat index created AFTER initial data load (NOT before)
+- Compute lists value first: `lists = max(10, row_count // 1000)`
+- Then create index with literal value: `CREATE INDEX ON documents USING ivfflat (embedding vector_cosine_ops) WITH (lists = <computed_literal>)`
+- Separate B-tree index on `content_hash` for fast deduplication checks
+- **Row Level Security**: Enable RLS with read-only policy for anon key OR use service-role key server-side only
 
 ### RAG Prompt Structure
 
@@ -162,17 +175,27 @@ Required for deployment:
 
 ## Deployment
 
-- **Frontend/API**: Vercel (free tier with Edge runtime for API routes)
+- **Frontend/API**: Vercel (free tier with Node.js runtime for API routes - required for 60s timeout)
 - **Vector DB**: Supabase (free tier provides 500MB DB, unlimited API calls)
-- **LLM**: HuggingFace Inference Endpoint (A10G GPU, auto-scales to zero)
+- **LLM**: HuggingFace Inference Endpoint (A10G GPU, auto-scales to zero) or Together.ai (recommended for cost)
+
+## Task Management
+
+This project uses **Flow-Next** for task tracking. All tasks are in `.flow/` directory:
+- **Backend Epic (fn-1-j9y)**: 5 tasks covering data pipeline, Supabase setup, LLM providers, and RAG API
+- **Frontend Epic (fn-2-5on)**: 3 tasks covering Next.js setup, chat components, and styling
+
+**Key Dependency**: Backend task fn-1-j9y.5 (RAG API) requires frontend task fn-2-5on.1 (Next.js scaffold) to be completed first.
+
+Use `.flow/bin/flowctl list` to see all tasks or `/flow-next:work fn-N.M` to start implementation.
 
 ## Critical Considerations
 
 **Conversation Context**: Multi-turn conversations require maintaining history. Store last 5 messages client-side (useChat hook handles this automatically) and use last 3 user messages for context-aware retrieval by filtering `messages.filter(m => m.role === 'user').slice(-3)` and concatenating with newlines. Generate a single embedding from the concatenated text. This prevents the chatbot from "forgetting" earlier context.
 
-**Chunking Strategy**: Use **fixed 700 tokens** with 100-token overlap, preferring sentence boundaries (NLTK). This consistency improves retrieval quality compared to variable chunk sizes.
+**Chunking Strategy**: Use **fixed 700 tiktoken tokens** (cl100k_base encoding) with 100-token overlap, preferring sentence boundaries (NLTK punkt tokenizer). Split text into sentences first using NLTK, then pack sentences into chunks of ~700 tiktoken tokens. This consistency improves retrieval quality compared to variable chunk sizes. **Critical**: Count tokens using tiktoken (NOT NLTK tokens) to match model's tokenization.
 
-**Content Deduplication**: Generate SHA-256 hash of normalized content (lowercase, whitespace-stripped) before embedding. College websites often have duplicate content (print versions, mirrors) that wastes API calls and storage.
+**Content Deduplication**: Generate SHA-256 hash of normalized content (collapse whitespace, preserve case for case sensitivity) before embedding. College websites often have duplicate content (print versions, mirrors) that wastes API calls and storage. Skip chunks with duplicate content_hash values.
 
 **Retrieval Quality**: The similarity search threshold (0.7) and match count (k=5) directly impact answer quality. Monitor avg similarity scores in logs and adjust if queries consistently return low-quality chunks.
 
@@ -180,10 +203,12 @@ Required for deployment:
 
 **Crawler Configuration**: Rate limit to 1 request/second, depth 8, respect robots.txt. Target specific URL patterns (`/programs/`, `/admissions/`, `/student-life/`, `/services/`) to avoid crawling irrelevant sections.
 
-**Index Timing**: Create IVFFlat index AFTER initial data load, not before. Calculate `lists = rows / 1000` (minimum 10) based on actual row count. Creating index on empty table or with wrong parameters degrades performance.
+**Index Timing**: Create IVFFlat index AFTER initial data load, not before. Compute `lists = max(10, row_count // 1000)` based on actual row count first, then create index with the computed literal value in SQL. Cannot use formula directly in CREATE INDEX statement. Creating index on empty table or with wrong parameters degrades performance.
 
 **Error Handling**:
-- LLM inference: 60s timeout with 3 retries (exponential backoff: 1s, 2s, 4s)
+- **Runtime**: Use Node.js runtime (NOT Edge) in API routes to support 60s timeout
+- **Retry logic**: 3 retries with exponential backoff (1s, 2s, 4s) applied to pre-stream steps only (embedding + retrieval)
+- **Stream failures**: If stream fails mid-generation, send terminal error message and close connection
 - No chunks retrieved: Return "I don't have that information in the college resources"
 - Always return user-friendly messages, never expose internal errors
 - Log all errors to Vercel Analytics for debugging but gracefully degrade
