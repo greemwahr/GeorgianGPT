@@ -1,0 +1,33 @@
+{
+  "commits": [],
+  "tests": [
+    "npm run dev executes successfully",
+    "Development server responds with HTTP 200",
+    "No TypeScript or linting errors",
+    "All shadcn/ui components compile without errors"
+  ],
+  "files_created": [
+    "components/ui/button.tsx",
+    "components/ui/input.tsx",
+    "components/ui/card.tsx",
+    "components/ui/scroll-area.tsx",
+    "lib/utils.ts",
+    "components.json"
+  ],
+  "files_modified": [
+    "package.json",
+    "app/globals.css"
+  ],
+  "dependencies_installed": [
+    "ai",
+    "@ai-sdk/openai",
+    "@supabase/supabase-js",
+    "openai",
+    "replicate",
+    "clsx",
+    "tailwind-merge",
+    "class-variance-authority",
+    "@radix-ui/react-slot",
+    "@radix-ui/react-scroll-area"
+  ]
+}
