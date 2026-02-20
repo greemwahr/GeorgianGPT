@@ -30,6 +30,15 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.scrapy/
+scripts/crawler/output.json
+
 # env files (can opt-in for committing if needed)
 .env*
 

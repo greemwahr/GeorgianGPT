@@ -1,0 +1,21 @@
+{
+  "commits": [],
+  "tests": [
+    "scrapy crawl college_spider -o output.json -s CLOSESPIDER_PAGECOUNT=5 completed successfully",
+    "output.json contains items with url, page_title, content, section, crawl_timestamp",
+    "Sections observed: general, admissions, student-life"
+  ],
+  "files_created": [
+    "requirements.txt",
+    "scripts/crawler/scrapy.cfg",
+    "scripts/crawler/crawler/__init__.py",
+    "scripts/crawler/crawler/items.py",
+    "scripts/crawler/crawler/middlewares.py",
+    "scripts/crawler/crawler/pipelines.py",
+    "scripts/crawler/crawler/settings.py",
+    "scripts/crawler/crawler/spiders/__init__.py",
+    "scripts/crawler/crawler/spiders/college_spider.py",
+    "scripts/crawler/README.md"
+  ],
+  "files_modified": [".gitignore"]
+}
