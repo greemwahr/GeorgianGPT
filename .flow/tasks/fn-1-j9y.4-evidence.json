@@ -1,0 +1,17 @@
+{
+  "commits": [],
+  "tests": [
+    "npm run build (TypeScript + Next.js build) passed",
+    "ReadLints on lib/llm returned no lints"
+  ],
+  "files_created": [
+    "lib/llm/provider.ts",
+    "lib/llm/factory.ts",
+    "lib/llm/providers/huggingface-adapter.ts",
+    "lib/llm/providers/together-adapter.ts",
+    "lib/llm/providers/replicate-adapter.ts",
+    ".flow/tasks/fn-1-j9y.4-summary.md",
+    ".flow/tasks/fn-1-j9y.4-evidence.json"
+  ],
+  "files_modified": []
+}
