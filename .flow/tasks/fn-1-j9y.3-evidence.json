@@ -1,0 +1,12 @@
+{
+  "commits": [],
+  "tests": [
+    "Run migration in Supabase SQL Editor; no errors.",
+    "Call match_documents with a test vector(1536) and match_threshold 0.7, match_count 5; returns correct columns and ordering."
+  ],
+  "files_created": [
+    "supabase/migrations/20260220000000_create_documents_and_match.sql",
+    "supabase/README.md"
+  ],
+  "files_modified": []
+}
